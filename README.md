@@ -4,7 +4,7 @@ An Angular 22 reference UI for an enterprise assistant backed by Pega Platform '
 
 ## Run locally
 
-Requirements: Node.js 22.12+ or 24+, npm 10+.
+Requirements: Node.js 22.22.3+, 24.15+, or 26+, npm 10+.
 
 ```bash
 npm install
@@ -56,3 +56,4 @@ src/styles.scss                   responsive application design system
 ## Pega deployment notes
 
 This is the Angular user interface and gateway contract, not a Pega application export. The corresponding Pega application still needs Case Types, assignment/approval flows, access roles, Agent/Tool Rules where used, REST/DX API configuration, and audit policies. In Pega Platform '25, deploy Pega in a supported containerized environment and configure enterprise Kafka separately for Kafka Data Sets when that is part of the chosen integration design.
+
