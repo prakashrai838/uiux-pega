@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AssistantApiService } from '../assistant-api.service';
 import { EnterpriseCase } from '../models';
@@ -25,15 +25,16 @@ import { EnterpriseCase } from '../models';
   <section class="table-card">
     <div class="table-toolbar"><div class="search-box"><span>⌕</span><input aria-label="Search requests" placeholder="Search your requests"></div><button class="filter-button">All requests <span>⌄</span></button></div>
     <div class="table-scroll"><table><thead><tr><th>REQUEST</th><th>TYPE</th><th>STATUS</th><th>LAST UPDATED</th><th></th></tr></thead><tbody>
-      <tr *ngFor="let item of cases"><td><a class="case-title" [routerLink]="['/cases', item.id]"><span class="case-id">{{item.id}}</span><strong>{{item.title}}</strong></a></td><td>{{item.category}}</td><td><span class="status-pill" [ngClass]="statusClass(item.status)"><i></i>{{item.status}}</span></td><td class="muted">{{item.updatedAt}}</td><td><a class="row-arrow" [routerLink]="['/cases', item.id]" [attr.aria-label]="'Open ' + item.id">↗</a></td></tr>
+      <tr *ngFor="let item of cases()"><td><a class="case-title" [routerLink]="['/cases', item.id]"><span class="case-id">{{item.id}}</span><strong>{{item.title}}</strong></a></td><td>{{item.category}}</td><td><span class="status-pill" [ngClass]="statusClass(item.status)"><i></i>{{item.status}}</span></td><td class="muted">{{item.updatedAt}}</td><td><a class="row-arrow" [routerLink]="['/cases', item.id]" [attr.aria-label]="'Open ' + item.id">↗</a></td></tr>
     </tbody></table></div>
-    <div class="table-foot"><span>Showing {{cases.length}} recent requests</span><a routerLink="/">View all requests <span>→</span></a></div>
+    <div class="table-foot"><span>Showing {{cases().length}} recent requests</span><a routerLink="/">View all requests <span>→</span></a></div>
   </section>
   <section class="trust-note"><span class="trust-icon">⌑</span><span><strong>Your information stays protected.</strong> Responses use sources you’re permitted to access, and actions are recorded in your case history.</span><a routerLink="/cases/PEGA-1042/details">How it works</a></section>
 ` })
 export class HomeComponent implements OnInit {
   private readonly api = inject(AssistantApiService);
-  cases: EnterpriseCase[] = [];
-  ngOnInit(): void { this.api.listCases().subscribe((items) => this.cases = items); }
+  cases = signal<EnterpriseCase[]>([]);
+  ngOnInit(): void { this.api.listCases().subscribe((items) => this.cases.set(items)); }
   statusClass(status: string): string { return status.toLowerCase().replaceAll(' ', '-'); }
 }
+

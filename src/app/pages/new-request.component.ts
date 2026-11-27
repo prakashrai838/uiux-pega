@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AssistantApiService } from '../assistant-api.service';
@@ -21,8 +21,8 @@ import { AssistantApiService } from '../assistant-api.service';
       <div class="file-chips" *ngIf="files.length"><span *ngFor="let file of files">📎 {{file}} <button type="button" (click)="removeFile(file)" aria-label="Remove file">×</button></span></div>
 
       <div class="privacy-callout"><span>⌑</span><div><strong>Your request is protected</strong><small>Only include information needed to resolve your request. Access follows your company permissions.</small></div></div>
-      <div class="form-actions"><a class="button button-secondary" routerLink="/">Cancel</a><button class="button button-primary" type="submit" [disabled]="!requestForm.valid || submitting">{{submitting ? 'Creating case…' : 'Submit request'}} <span>→</span></button></div>
-      <p class="error-message" *ngIf="error">{{error}}</p>
+      <div class="form-actions"><a class="button button-secondary" routerLink="/">Cancel</a><button class="button button-primary" type="submit" [disabled]="!requestForm.valid || submitting()">{{submitting() ? 'Creating case…' : 'Submit request'}} <span>→</span></button></div>
+      <p class="error-message" *ngIf="error()">{{error()}}</p>
     </form>
   </section><aside class="request-aside"><div class="aside-icon">✦</div><h3>One request, a clear path forward.</h3><p>Your assistant can find trusted company guidance, prepare actions, and route approvals through the right people.</p><ul><li><span>✓</span> Answers include source references</li><li><span>✓</span> Sensitive actions require approval</li><li><span>✓</span> Progress stays visible in your case</li></ul><div class="aside-foot"><span class="shield">◆</span> Protected by your enterprise access controls</div></aside></div>
 ` })
@@ -32,16 +32,17 @@ export class NewRequestComponent {
   requestText = '';
   category = '';
   files: string[] = [];
-  submitting = false;
-  error = '';
+  submitting = signal(false);
+  error = signal('');
   onFiles(event: Event): void { const input = event.target as HTMLInputElement; this.files = [...this.files, ...Array.from(input.files ?? []).map((file) => file.name)]; }
   removeFile(name: string): void { this.files = this.files.filter((file) => file !== name); }
   submit(): void {
-    if (!this.requestText.trim() || this.submitting) return;
-    this.submitting = true; this.error = '';
+    if (!this.requestText.trim() || this.submitting()) return;
+    this.submitting.set(true); this.error.set('');
     this.api.createRequest({ request: this.requestText.trim(), category: this.category, files: this.files }).subscribe({
       next: (item) => this.router.navigate(['/cases', item.id]),
-      error: () => { this.error = 'We couldn’t create the case. Your request is saved here; please try again.'; this.submitting = false; },
+      error: () => { this.error.set('We couldn’t create the case. Your request is saved here; please try again.'); this.submitting.set(false); },
     });
   }
 }
+
